@@ -34,7 +34,7 @@ public class PokemonController {
     private String localBaseUrl;
 
     private String getAttribute(JsonNode node) {
-        return node != null ? node.asText() : null;
+        return node != null && !node.isNull() ? node.asText(): null;
     }
 
     private JsonNode objectResponseData(String url) throws Exception {
@@ -140,9 +140,9 @@ public class PokemonController {
         for (PokemonEvolutionChain pokemonEvolutionChain: buildEvolutionChain) {
             if (Objects.equals(pokemonEvolutionChain.getBasicEvolution().name(), name)) {
                 evolutions = List.copyOf(buildEvolutionChain);
-            } else if (Objects.equals(pokemonEvolutionChain.getIntermediateEvolution().name(), name)) {
+            } else if (pokemonEvolutionChain.getIntermediateEvolution() != null && Objects.equals(pokemonEvolutionChain.getIntermediateEvolution().name(), name)) {
                 evolutions.add(pokemonEvolutionChain);
-            } else if (Objects.equals(pokemonEvolutionChain.getFinalEvolution().name(), name)) {
+            } else if (pokemonEvolutionChain.getFinalEvolution() != null && Objects.equals(pokemonEvolutionChain.getFinalEvolution().name(), name)) {
                 evolutions = List.of(pokemonEvolutionChain);
             }
         }
@@ -305,7 +305,7 @@ public class PokemonController {
     }
 
     @GetMapping(value = "/search/{name}")
-    public ResponseEntity<List<BasicPokemonDTO>> getPokemonByName(@PathVariable String name) {
+    public ResponseEntity<PokemonListDTO> getPokemonByName(@PathVariable String name) {
         String apiUrl = String.format("%s/pokemon?offset=%s&limit=%s", baseURL, 0, 833);
 
         try {
@@ -326,7 +326,7 @@ public class PokemonController {
                 }
             }
 
-            return ResponseEntity.ok().body(matchPokemons);
+            return ResponseEntity.ok().body(new PokemonListDTO(null, null, matchPokemons));
         } catch (Exception e) {
             e.printStackTrace();
         }
