@@ -18,6 +18,8 @@ import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping(value = "pokemon")
@@ -300,5 +302,34 @@ public class PokemonController {
             e.printStackTrace();
             return null;
         }
+    }
+
+    @GetMapping(value = "/search/{name}")
+    public ResponseEntity<List<BasicPokemonDTO>> getPokemonByName(@PathVariable String name) {
+        String apiUrl = String.format("%s/pokemon?offset=%s&limit=%s", baseURL, 0, 833);
+
+        try {
+            JsonNode jsonNode = objectResponseData(apiUrl);
+
+            JsonNode pokemonsNode = jsonNode.get("results");
+
+            List<BasicPokemonDTO> matchPokemons = new ArrayList<>();
+
+            for (JsonNode node: pokemonsNode) {
+                Pattern pattern = Pattern.compile(name, Pattern.CASE_INSENSITIVE);
+                Matcher matcher = pattern.matcher(node.get("name").asText());
+
+                if (matcher.find()) {
+                    var pokemonBasic = getBasicInformationPokemon(node.get("url").asText());
+
+                    matchPokemons.add(pokemonBasic);
+                }
+            }
+
+            return ResponseEntity.ok().body(matchPokemons);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
