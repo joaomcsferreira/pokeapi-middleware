@@ -8,10 +8,7 @@ import com.joaomarcos.pokeapimiddleware.entities.DTO.attributes.SpriteSmallDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -111,4 +108,19 @@ public class PokemonController {
         }
     }
 
+    @GetMapping(value = "/{id}/basic")
+    public ResponseEntity<BasicPokemonDTO> getBasicPokemon(@PathVariable String id) {
+        String apiUrl = String.format("%s/pokemon/%s", baseURL , id);
+
+        try {
+            var basicPokemon = getBasicInformationPokemon(apiUrl);
+
+            return ResponseEntity
+                    .ok()
+                    .body(basicPokemon);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
